@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "43141180790",
+    "project_id": "defis-d63fc",
+    "storage_bucket": "defis-d63fc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:43141180790:android:dec2e9699781e698e61e57",
+        "android_client_info": {
+          "package_name": "comite.fisa.defis_inte"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "43141180790-96ts6gaqeabpj2nfdg0n2jitr31qgifi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4NvE1QllnSeAOKGLn2-sgyWgRWtdsosU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "43141180790-96ts6gaqeabpj2nfdg0n2jitr31qgifi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
