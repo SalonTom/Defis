@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print
 
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:defis_inte/description_defi.dart';
 import 'package:defis_inte/login.dart';
@@ -30,6 +32,7 @@ class _ListeDefisState extends State<ListeDefis> {
 
   Equipe equipe = Equipe('', '', 0);
   User user = User("", false, "", "");
+  Color iconColor = Colors.white;
 
   Future<List<Defi>> getDefis() async {
     var donnees = await bdd.collection('defis').get();
@@ -99,10 +102,12 @@ class _ListeDefisState extends State<ListeDefis> {
     super.initState();
   }
 
-  Color? getTileColor(String? defiId) {
-    var color;
-    color = defisValidesId.contains(defiId) ? Colors.green : null;
-    return color;
+  Color getCheckColor(String? defiId) {
+    return defiIsDone(defiId) ? Colors.green : Colors.yellow.shade700;
+  }
+
+  bool defiIsDone(String? defiId) {
+    return defisValidesId.contains(defiId);
   }
 
   getSubtitles(Defi defi) {
@@ -115,35 +120,91 @@ class _ListeDefisState extends State<ListeDefis> {
     
     temp.removeWhere((element) => element == null);
     if (temp.isEmpty) {
-      return "Aucune equipe n'a fait ce défi.";
+      return "Aucune équipe n'a fait ce défi.";
     } else {
       return temp.join(', ');
     }
+  }
+
+  Widget getCompletion() {
+    double completion = defis.isNotEmpty ? defisValides.length/defis.length : 0;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Container(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            value: completion,
+            color: Colors.green,
+            backgroundColor: Colors.grey,
+          )
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text(
+            '${(completion*100).truncate()}% des défis validés !',
+          )
+        )
+      ],
+    );
   }
 
   Widget getHeader() {
     return Container(
       height: MediaQuery.of(context).size.height/6,
       margin: const EdgeInsets.all(5.0),
-      padding: const EdgeInsets.all(10.0),
+      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         border: Border.all(),
-        borderRadius: const BorderRadius.all(Radius.circular(5.0))
+        borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+        color: Colors.white
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Column(
-            children: [
-              Text(user.nom_equipe as String),
-              Text('${equipe.points}')                
-            ],
+          SizedBox(
+            width: 2*MediaQuery.of(context).size.width/3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  user.nom_equipe as String,
+                  style:const TextStyle(
+                    fontSize: 40
+                  ) 
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 5.0),
+                  child: user.isAdmin ? null : getCompletion()
+                )             
+              ],
+            ),
           ),
-          const Center(
-            child : Text("#1")
+          Expanded(
+            child: Center(
+              child : Container(
+                margin: const EdgeInsets.only(right: 5, top: 5),
+                width: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey.shade900
+                ),
+                child: Center(
+                  child: user.isAdmin ? 
+                    const Icon(Icons.shield_outlined, size: 70, color: Colors.white,) : 
+                      Text('${equipe.points}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 35
+                      ),
+                  )
+                )
+              ),
+            )
           )
         ],
-      ),
+      )
     );
   }
 
@@ -151,6 +212,7 @@ class _ListeDefisState extends State<ListeDefis> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.black,
         title: const Text('Liste des défis'),
         actions: [
           IconButton(
@@ -182,58 +244,19 @@ class _ListeDefisState extends State<ListeDefis> {
       body: Column(
         children: [
           getHeader(),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: defis.length,
-            itemBuilder: (context, index) {
-              var defi = defis[index];
-              return Container(
-                margin: const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0),
-                decoration: BoxDecoration(
-                  border: Border.all(),
-                  borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                  color: !user.isAdmin ? getTileColor(defi.id) : null
-                ),
-                child: ListTile(
-                  style: ListTileStyle.list,
-                  leading: SizedBox(
-                    width: 20,
-                    child : Center(child: Text('#${index + 1}')),
-                  ),
-                  title: Text(defi.titre as String),
-                  trailing: Text('${defi.points}'),
-                  subtitle: user.isAdmin ? 
-                    Text(getSubtitles(defi)) : null,
-                  onTap: () => {
-                    if(user.isAdmin) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DescriptionDefi(defi: defi, isAdmin: user.isAdmin, uidUtilisateur: user.uid,)
-                        )
-                      )
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DescriptionDefi(defi: defi, isAdmin: user.isAdmin, uidUtilisateur: user.uid,)
-                        )
-                      )
-                    }
-                  },
-                ),
-              );
-            }
+          Expanded(
+            child: user.isAdmin ? listeDefiAdmin() : listeDefisNonAdmin()
           ),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
+        color: Colors.black,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children : [
-            const IconButton(
+            IconButton(
               onPressed: null, 
-              icon: Icon(Icons.view_list_rounded)
+              icon: Icon(Icons.view_list_rounded, color: iconColor)
             ),
             IconButton(
               onPressed: (){
@@ -244,11 +267,130 @@ class _ListeDefisState extends State<ListeDefis> {
                   )
                 );
               }, 
-              icon: const Icon(Icons.leaderboard),
+              icon: Icon(Icons.leaderboard, color: iconColor,),
             ),
           ]
         )
       ),
+    );
+  }
+
+
+  Widget listeDefisNonAdmin() {
+
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: defis.length,
+      itemBuilder: (context, index) {
+        var defi = defis[index];
+        return Container(
+          margin: const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0),
+          decoration: BoxDecoration(
+            border: Border.all(),
+            borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+            color: defiIsDone(defi.id) ? Colors.green.shade100 : Colors.white
+          ),
+          child: ListTile(
+            style: ListTileStyle.list,
+            leading: Container(
+              width: 35,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(width: 2.0, color: getCheckColor(defi.id)),
+              ),
+              child : Center(
+                child: Text(
+                  '${defi.points}',
+                  style: TextStyle(
+                    color: getCheckColor(defi.id),
+                  ),
+                )
+              ),
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.start, 
+              children: [
+                Text(defi.titre as String)
+              ]
+            ),
+            trailing: Icon(
+              defiIsDone(defi.id) ? Icons.check : Icons.access_time_outlined,
+              color: getCheckColor(defi.id),
+              size: 35,
+            ),
+            subtitle: user.isAdmin ? 
+              Text(getSubtitles(defi)) : null,
+            onTap: () => {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DescriptionDefi(defi: defi, isAdmin: user.isAdmin, uidUtilisateur: user.uid,)
+                )
+              )
+            },
+          ),
+        );
+      }
+    );
+  }
+
+  Widget listeDefiAdmin() {
+
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: defis.length,
+      itemBuilder: (context, index) {
+        var defi = defis[index];
+        return Container(
+          margin: const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0),
+          decoration: BoxDecoration(
+            border: Border.all(),
+            borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+            color: defiIsDone(defi.id) ? Colors.green.shade100 : Colors.white
+          ),
+          child: ListTile(
+            style: ListTileStyle.list,
+            leading: Container(
+              width: 35,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(width: 2.0, color: getCheckColor(defi.id)),
+              ),
+              child : Center(
+                child: Text(
+                  '${defi.points}',
+                  style: TextStyle(
+                    color: getCheckColor(defi.id),
+                  ),
+                )
+              ),
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.start, 
+              children: [
+                Text(defi.titre as String)
+              ]
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: getCheckColor(defi.id),
+              size: 35,
+            ),
+            subtitle: user.isAdmin ? 
+              Text(getSubtitles(defi)) : null,
+            onTap: () => {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DescriptionDefi(defi: defi, isAdmin: user.isAdmin, uidUtilisateur: user.uid,)
+                )
+              )
+            },
+          ),
+        );
+      }
     );
   }
 }
