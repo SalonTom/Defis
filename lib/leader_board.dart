@@ -23,7 +23,7 @@ class _LeaderBoardState extends State<LeaderBoard> {
     return equipes;
   }
 
-  Color? getTileColor(int index) {
+  Color getColor(int index) {
     Color? color;
     if (index == 0) {
       color = const Color.fromRGBO(255, 215, 0, 1);
@@ -31,6 +31,8 @@ class _LeaderBoardState extends State<LeaderBoard> {
       color = const Color.fromRGBO(192, 192, 192, 1);
     } else if (index == 2) {
       color = const Color.fromRGBO(196, 156, 72, 1);
+    } else {
+      color = Colors.black;
     }
 
     return color;
@@ -52,6 +54,7 @@ class _LeaderBoardState extends State<LeaderBoard> {
       appBar: AppBar(
         title: const Text('LeaderBoard'),
         automaticallyImplyLeading: false,
+        backgroundColor: Colors.black,
       ),
       body: Center(
         child: ListView.builder(
@@ -63,16 +66,29 @@ class _LeaderBoardState extends State<LeaderBoard> {
               decoration: BoxDecoration(
                 border: Border.all(),
                 borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                color: getTileColor(index),
+                color: Colors.white,
               ),
               child: ListTile(
                 style: ListTileStyle.list,
-                leading: SizedBox(
-                  width: 20,
-                  child : Center(child: Text('#${index + 1}')),
+                leading: Container(
+                  width: 35,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(width: 2.0, color: getColor(index)),
+                  ),
+                  child : Center(
+                    child: Text(
+                      '#${index+1}',
+                      style: TextStyle(
+                        color: getColor(index),
+                      ),
+                    )
+                  ),
                 ),
                 title: Text(equipe.nom as String),
-                trailing: Text('${equipe.points}'),
+                trailing: Text(
+                  '${equipe.points}',
+                ),
               ),
             );
           }
@@ -91,11 +107,11 @@ class _LeaderBoardState extends State<LeaderBoard> {
                   )
                 );
               }, 
-              icon: const Icon(Icons.view_list_rounded)
+              icon: const Icon(Icons.view_list_rounded, color: Colors.white,)
             ),
             const IconButton(
               onPressed: null,
-              icon: Icon(Icons.leaderboard),
+              icon: Icon(Icons.leaderboard, color: Colors.white,),
             ),
           ]
         )

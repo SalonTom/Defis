@@ -152,7 +152,7 @@ class _ListeDefisState extends State<ListeDefis> {
 
   Widget getHeader() {
     return Container(
-      height: MediaQuery.of(context).size.height/6,
+      height: 150,
       margin: const EdgeInsets.all(5.0),
       padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
@@ -250,7 +250,6 @@ class _ListeDefisState extends State<ListeDefis> {
         ],
       ),
       bottomNavigationBar: BottomAppBar(
-        color: Colors.black,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children : [
