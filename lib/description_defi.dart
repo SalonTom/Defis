@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:defis_inte/leader_board.dart';
 import 'package:defis_inte/liste_defis.dart';
 import 'package:defis_inte/model/defi.dart';
 import 'package:defis_inte/model/defi_valide.dart';
@@ -133,17 +134,6 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.defi.titre as String),
-        actions: widget.isAdmin ? [
-          ElevatedButton(
-            onPressed: (() => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ListeDefis(uidUtilisateur: widget.uidUtilisateur as String)
-                    )
-                  )), 
-            child: const Icon(Icons.exit_to_app),
-          )
-        ] : null,
       ),
       body: Column(
         children: [
@@ -158,7 +148,34 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
             ],
           )
         ],
-      )
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children : [
+            TextButton(
+              onPressed: () {
+                if (widget.isAdmin) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ListeDefis(uidUtilisateur: widget.uidUtilisateur as String)
+                    )
+                  );
+                } else {
+                  Navigator.pop(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ListeDefis(uidUtilisateur: widget.uidUtilisateur as String)
+                    )
+                  );
+                }
+              }, 
+              child: const Text("Retour à la liste")
+            ),
+          ]
+        )
+      ),
     );
   }
 }

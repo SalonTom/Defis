@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:defis_inte/liste_defis.dart';
 import 'package:defis_inte/model/equipe.dart';
 import 'package:flutter/material.dart';
 
 class LeaderBoard extends StatefulWidget {
-  const LeaderBoard({Key? key}) : super(key: key);
+  const LeaderBoard({Key? key, required this.uidUtilisateur}) : super(key: key);
+  final String uidUtilisateur;
 
   @override
   State<LeaderBoard> createState() => _LeaderBoardState();
@@ -49,6 +51,7 @@ class _LeaderBoardState extends State<LeaderBoard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('LeaderBoard'),
+        automaticallyImplyLeading: false,
       ),
       body: Center(
         child: ListView.builder(
@@ -59,6 +62,7 @@ class _LeaderBoardState extends State<LeaderBoard> {
               margin: const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0),
               decoration: BoxDecoration(
                 border: Border.all(),
+                borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                 color: getTileColor(index),
               ),
               child: ListTile(
@@ -72,6 +76,28 @@ class _LeaderBoardState extends State<LeaderBoard> {
               ),
             );
           }
+        )
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children : [
+            IconButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ListeDefis(uidUtilisateur: widget.uidUtilisateur)
+                  )
+                );
+              }, 
+              icon: const Icon(Icons.view_list_rounded)
+            ),
+            const IconButton(
+              onPressed: null,
+              icon: Icon(Icons.leaderboard),
+            ),
+          ]
         )
       ),
     );

@@ -2,8 +2,10 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:defis_inte/description_defi.dart';
+import 'package:defis_inte/login.dart';
 import 'package:defis_inte/model/equipe.dart';
 import 'package:defis_inte/model/user.dart';
+import 'package:defis_inte/utils/authentification.dart';
 import 'package:flutter/material.dart';
 import 'package:defis_inte/leader_board.dart';
 import 'package:defis_inte/model/defi.dart';
@@ -24,6 +26,7 @@ class _ListeDefisState extends State<ListeDefis> {
   List<Defi> defis = [];
   List<DefiValide> defisValides = [];
   List<String?> defisValidesId = [];
+  Authentification authentification = Authentification();
 
   Equipe equipe = Equipe('', '', 0);
   User user = User("", false, "", "");
@@ -66,7 +69,7 @@ class _ListeDefisState extends State<ListeDefis> {
     var donnees = await bdd.collection('equipes').where('nom', isEqualTo: user.nom_equipe).get();
     var team = (donnees.docs.map((team) => Equipe.fromMap(team)).toList())[0];
 
-    print('====> TEAM CONNECTED : ${equipe.nom}');
+    print('====> TEAM CONNECTED : ${team.nom}');
 
     setState(() {
       equipe = team;
@@ -118,39 +121,67 @@ class _ListeDefisState extends State<ListeDefis> {
     }
   }
 
+  Widget getHeader() {
+    return Container(
+      height: MediaQuery.of(context).size.height/6,
+      margin: const EdgeInsets.all(5.0),
+      padding: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        border: Border.all(),
+        borderRadius: const BorderRadius.all(Radius.circular(5.0))
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Column(
+            children: [
+              Text(user.nom_equipe as String),
+              Text('${equipe.points}')                
+            ],
+          ),
+          const Center(
+            child : Text("#1")
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Liste des devis'),
+        title: const Text('Liste des défis'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ListeDefis(uidUtilisateur: widget.uidUtilisateur)
+                )
+              );
+            },
+            icon: const Icon(Icons.refresh)
+          ),
+          IconButton(
+            onPressed: () {
+              authentification.deconnexion().then((value) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const Login()
+                  )
+                );
+              });
+            },
+            icon: const Icon(Icons.logout)
+          ),
+        ],
       ),
       body: Column(
         children: [
-          Container(
-            height: MediaQuery.of(context).size.height/6,
-            margin: const EdgeInsets.all(5.0),
-            padding: const EdgeInsets.all(10.0),
-            decoration: BoxDecoration(
-              border: Border.all(),
-              borderRadius: const BorderRadius.all(Radius.circular(5.0))
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Text(user.nom_equipe as String),
-                    Text('${equipe.points}')                
-                  ],
-                ),
-                const Center(
-                  child : Text("#1")
-                )
-              ],
-            ),
-          ),
-
+          getHeader(),
           ListView.builder(
             shrinkWrap: true,
             itemCount: defis.length,
@@ -160,6 +191,7 @@ class _ListeDefisState extends State<ListeDefis> {
                 margin: const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0),
                 decoration: BoxDecoration(
                   border: Border.all(),
+                  borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                   color: !user.isAdmin ? getTileColor(defi.id) : null
                 ),
                 child: ListTile(
@@ -194,30 +226,21 @@ class _ListeDefisState extends State<ListeDefis> {
             }
           ),
         ],
-      )
-      
-      ,
+      ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children : [
-            IconButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ListeDefis(uidUtilisateur: widget.uidUtilisateur)
-                  )
-                );
-              }, 
-              icon: const Icon(Icons.view_list_rounded)
+            const IconButton(
+              onPressed: null, 
+              icon: Icon(Icons.view_list_rounded)
             ),
             IconButton(
               onPressed: (){
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const LeaderBoard(),
+                    builder: (context) => LeaderBoard(uidUtilisateur: widget.uidUtilisateur,),
                   )
                 );
               }, 
