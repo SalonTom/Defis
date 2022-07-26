@@ -79,7 +79,12 @@ class _LoginState extends State<Login> {
         keyboardType: TextInputType.emailAddress,
         decoration: const InputDecoration(
           hintText: 'Adresse mail',
-          icon: Icon(Icons.mail),
+          prefixIcon: Icon(
+            Icons.mail_outline,
+            color: Colors.black,
+          ),
+          filled: true,
+          fillColor: Colors.white,
         ), 
       )
     );
@@ -93,7 +98,12 @@ class _LoginState extends State<Login> {
         keyboardType: TextInputType.visiblePassword,
         decoration: const InputDecoration(
           hintText: 'Mot de passe',
-          icon: Icon(Icons.lock),
+          prefixIcon: Icon(
+            Icons.lock_outline_rounded,
+            color: Colors.black,
+          ),
+          filled: true,
+          fillColor: Colors.white,
         ),
         obscureText: true,
       )
@@ -108,15 +118,17 @@ class _LoginState extends State<Login> {
             borderRadius: BorderRadius.circular(20)
           )
         ),
-        
+        backgroundColor: MaterialStateProperty.all<Color>(
+          Colors.black
+        ),
       ),
       onPressed: soumettre,
-      child: const Text("Se connecter")
+      child: const Text("Se connecter", style: TextStyle(color: Colors.white),)
     );
   }
 
   Widget messageValidation() {
-    return Text(message != null ? '$message' : '');
+    return Text(message != null ? '$message' : '', style: const TextStyle(color: Colors.red),);
   }
 
   @override
@@ -124,21 +136,48 @@ class _LoginState extends State<Login> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Page de connexion"),
+        backgroundColor: Colors.black,
       ),
-      body : Form(
-        child: Padding(
-          padding: const EdgeInsets.all(15.0), 
+      body : SingleChildScrollView(child: Form(
+        child: Container(
+          height: 5*MediaQuery.of(context).size.height/6,
+          margin: const EdgeInsets.all(15),
+          padding: const EdgeInsets.all(5),
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(5.0)),
+          ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
+              const CircleAvatar(
+                backgroundImage: AssetImage('assets/logo_comite.png'),
+                radius: 100,
+              ),
+              const Text(
+                'Bonjour cher bizuth !',
+                style: TextStyle(
+                  fontSize: 25,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Text(
+                'Tu t\'apprêtes à consulter les défis que nous avons réservés pour cette intégration ! Donne toi à fond pour permettre à ton équipe de remporter la victoire !',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  height: 1.5
+                ),
+                textAlign: TextAlign.center,
+              ),
               saisirEmail(),
               saisirMdp(),
+              messageValidation(),
               boutonPrincipal(),
-              messageValidation()
             ]
           ),
         )
       )
-    );
+    ));
   }
 }
