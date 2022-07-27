@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:defis_inte/leader_board.dart';
 import 'package:defis_inte/liste_defis.dart';
 import 'package:defis_inte/model/defi.dart';
 import 'package:defis_inte/model/defi_valide.dart';
 import 'package:defis_inte/model/equipe.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class DescriptionDefi extends StatefulWidget {
   const DescriptionDefi({
@@ -26,6 +26,7 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
   FirebaseFirestore bdd = FirebaseFirestore.instance;
   List<Equipe> equipes = [];
   List<DefiValide> listeDefisValides = [];
+  List<String?> listeDefisValidesId = [];
   String? selectedEquipe;
 
   Future getEquipes() async {
@@ -33,7 +34,6 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
 
     setState(() {
       equipes = donnees.docs.map((equipe) => Equipe.fromMap(equipe)).toList();
-      // selectedEquipe = equipes[0].nom as String;
     });
   }
 
@@ -41,6 +41,7 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
     var donnees = await bdd.collection('defis_valides_equipes').where("id_defi", isEqualTo: widget.defi.id).get();
     setState(() {
       listeDefisValides = donnees.docs.map((e) => DefiValide.fromMap(e)).toList();
+      listeDefisValidesId = listeDefisValides.map((defi) => defi.id_defi).toList();
     });
   }
 
@@ -59,6 +60,14 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
     });
   }
 
+  bool defiIsDone(String? defiId) {
+    return listeDefisValidesId.contains(defiId);
+  }
+
+  Color getCheckColor(String? defiId) {
+    return defiIsDone(defiId) ? Colors.green : Colors.yellow.shade700;
+  }
+
   Widget getDesciptionScreen() {
     if (widget.isAdmin) {
       bool defiOkByAllTeams = false;
@@ -69,18 +78,32 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
       }
 
       if (!defiOkByAllTeams) {
-        return Row(
+        return Column(
           children: [
             SizedBox(
-              width: MediaQuery.of(context).size.width/2,
+              width: MediaQuery.of(context).size.width - 20,
               child: DropdownButton<String>(
                 value: selectedEquipe,
                 isExpanded: true,
-                hint: const Text('Saisir une équipe'),
+                style: const TextStyle(color: Colors.white),
+                hint: const Center(child:Text('Saisir une équipe', style: TextStyle(color: Colors.white))),
+                icon: const Icon(
+                  Icons.arrow_drop_down, 
+                  color: Colors.white, // <-- SEE HERE
+                ),
                 onChanged: (String? newValue) {
                   setState(() {
                     selectedEquipe = newValue;
                   });
+                },
+                selectedItemBuilder: (BuildContext context) { //<-- SEE HERE
+                  return equipes
+                      .map((value) {
+                    return Center(child: Text(
+                      selectedEquipe == null ? '' : selectedEquipe as String,
+                      style: const TextStyle(color: Colors.white),
+                    ));
+                  }).toList();
                 },
                 items: equipes.map((equipe) {
                   return DropdownMenuItem(
@@ -97,8 +120,8 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
               )
             ),
             SizedBox(
-              width: MediaQuery.of(context).size.width/2,
-              child: ElevatedButton(
+              width: MediaQuery.of(context).size.width - 20,
+              child: OutlinedButton(
                 onPressed: selectedEquipe == null ? null : 
                 () {
                   addDefiValide().then((value) {
@@ -110,7 +133,12 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
                     );
                   });
                 },
-                child: const Text("Valider pour cette équipe"),),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  primary: Colors.white,
+                  side: const BorderSide(color: Colors.white, width: 2), //<-- SEE HERE
+                ),
+                child: const Text("Valider pour cette équipe", style: TextStyle(color: Colors.white),),),
             )
           ]
         );
@@ -119,6 +147,30 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
       }
     } else {
       return const Text('');
+    }
+  }
+
+  double? getCompletion() {
+    var count = listeDefisValidesId.map((e) => e == widget.defi.id).length;
+    return equipes.isEmpty ? 0 : count/equipes.length;
+  }
+
+  getCount() {
+    if (!widget.isAdmin) {
+      return Icon(
+        defiIsDone(widget.defi.id) ? Icons.check : Icons.access_time_outlined,
+        color: widget.isAdmin ? Colors.black : getCheckColor(widget.defi.id),
+        size: 85,
+      );
+    } else {
+      var count = listeDefisValidesId.map((e) => e == widget.defi.id).length;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text('$count / ${equipes.length}', style: const TextStyle(fontSize: 20)),
+          const Text('équipes ont complété le défi', textAlign: TextAlign.center)
+        ]
+      );
     }
   }
 
@@ -134,18 +186,85 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.defi.titre as String),
+        backgroundColor: Colors.black,
       ),
       body: Column(
         children: [
           Row(
             children: [
-              Expanded(child:Text(widget.defi.description as String), ),
+              Expanded(
+                child: Container(
+                  height: 200,
+                  margin: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(10.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(),
+                    borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+                    color: Colors.white
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child : Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(child: Text(widget.defi.titre as String, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),)
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 5.0),
+                              child: Row(
+                                children: [
+                                  Expanded(child: Text(widget.defi.description as String))
+                                ],
+                              ),
+                            ) 
+                          ],
+                        )
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Expanded(
+                            child: Container(
+                              height: 85,
+                              width: 85,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(width: 2.0, color: widget.isAdmin? Colors.black : getCheckColor(widget.defi.id)),
+                              ),
+                              child : Center(
+                                child: Text(
+                                  '${widget.defi.points}',
+                                  style: TextStyle(
+                                    color: widget.isAdmin ? Colors.black : getCheckColor(widget.defi.id),
+                                    fontSize: 25,
+                                  ),
+                                )
+                              ),
+                            ),
+                          ),
+                          Container(
+                            height: 80,
+                            decoration: const BoxDecoration(border: Border(right: BorderSide(color: Colors.grey, width: 3.0))),
+                            child: const Text('')
+                          ),
+                          Expanded(
+                            child: Container(child: getCount(), padding: const EdgeInsets.only(left: 10.0),),
+                          )
+                        ],
+                      )
+                    ],
+                  )
+                )
+              ),
             ],
           ),
-          Row(
-            children: [
-              getDesciptionScreen(),
-            ],
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: getDesciptionScreen(),
           )
         ],
       ),
@@ -153,7 +272,7 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children : [
-            TextButton(
+            IconButton(
               onPressed: () {
                 if (widget.isAdmin) {
                   Navigator.pushReplacement(
@@ -171,7 +290,7 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
                   );
                 }
               }, 
-              child: const Text("Retour à la liste")
+              icon: const Icon(Icons.view_list_rounded, color: Colors.white,)
             ),
           ]
         )

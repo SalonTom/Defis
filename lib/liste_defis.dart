@@ -1,7 +1,4 @@
 // ignore_for_file: avoid_print
-
-import 'dart:ui';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:defis_inte/description_defi.dart';
 import 'package:defis_inte/login.dart';
@@ -28,6 +25,7 @@ class _ListeDefisState extends State<ListeDefis> {
   List<Defi> defis = [];
   List<DefiValide> defisValides = [];
   List<String?> defisValidesId = [];
+  List<Equipe> equipes = [];
   Authentification authentification = Authentification();
 
   Equipe equipe = Equipe('', '', 0);
@@ -42,6 +40,15 @@ class _ListeDefisState extends State<ListeDefis> {
     }
 
     return defis;
+  }
+
+  
+  Future getEquipes() async {
+    var donnees = await bdd.collection('equipes').get();
+
+    setState(() {
+      equipes = donnees.docs.map((equipe) => Equipe.fromMap(equipe)).toList();
+    });
   }
 
   Future<List<DefiValide>> getDefisValides() async {
@@ -89,15 +96,16 @@ class _ListeDefisState extends State<ListeDefis> {
       }),
       getDefis().then((listeDefis) => {
         setState(() {
-          this.defis = listeDefis;
+          defis = listeDefis;
         },),
         getDefisValides().then((listeDefisValides) => {
           setState(() {
-            this.defisValidesId = listeDefisValides.map((defi) => defi.id_defi).toList();
-          })
+            defisValidesId = listeDefisValides.map((defi) => defi.id_defi).toList();
+          }),
+          getEquipes().then((value) => null),
+          getTeam().then((value) => null),
         })
       }),
-      getTeam().then((value) => null)
     });
     super.initState();
   }
@@ -170,7 +178,7 @@ class _ListeDefisState extends State<ListeDefis> {
               children: [
                 Text(
                   user.nom_equipe as String,
-                  style:const TextStyle(
+                  style: const TextStyle(
                     fontSize: 40
                   ) 
                 ),
@@ -206,6 +214,11 @@ class _ListeDefisState extends State<ListeDefis> {
         ],
       )
     );
+  }
+
+  double? getLinearCompletion(String? defiId) {
+    var count = defisValidesId.where((e) => e == defiId).toList().length;
+    return equipes.isEmpty ? 0 : count/equipes.length;
   }
 
   @override
@@ -347,7 +360,7 @@ class _ListeDefisState extends State<ListeDefis> {
           decoration: BoxDecoration(
             border: Border.all(),
             borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-            color: defiIsDone(defi.id) ? Colors.green.shade100 : Colors.white
+            color: Colors.white
           ),
           child: ListTile(
             style: ListTileStyle.list,
@@ -355,13 +368,13 @@ class _ListeDefisState extends State<ListeDefis> {
               width: 35,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(width: 2.0, color: getCheckColor(defi.id)),
+                border: Border.all(width: 2.0, color: Colors.black),
               ),
               child : Center(
                 child: Text(
                   '${defi.points}',
-                  style: TextStyle(
-                    color: getCheckColor(defi.id),
+                  style: const TextStyle(
+                    color: Colors.black,
                   ),
                 )
               ),
@@ -369,16 +382,15 @@ class _ListeDefisState extends State<ListeDefis> {
             title: Row(
               mainAxisAlignment: MainAxisAlignment.start, 
               children: [
-                Text(defi.titre as String)
+                Text(defi.titre as String),
               ]
             ),
-            trailing: Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: getCheckColor(defi.id),
-              size: 35,
+            trailing: CircularProgressIndicator(
+              value: getLinearCompletion(defi.id),
+              color: Colors.green,
+              backgroundColor: Colors.grey,
             ),
-            subtitle: user.isAdmin ? 
-              Text(getSubtitles(defi)) : null,
+            subtitle: Text(getSubtitles(defi)),
             onTap: () => {
               Navigator.pushReplacement(
                 context,
