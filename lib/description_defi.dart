@@ -11,12 +11,14 @@ class DescriptionDefi extends StatefulWidget {
     Key? key,
     required this.defi,
     required this.isAdmin,
-    required this.uidUtilisateur
+    required this.uidUtilisateur,
+    required this.equipe
   }) : super(key: key);
 
   final Defi defi;
   final bool isAdmin;
   final String? uidUtilisateur;
+  final Equipe equipe;
 
   @override
   State<DescriptionDefi> createState() => _DescriptionDefiState();
@@ -65,7 +67,7 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
   }
 
   Color getCheckColor(String? defiId) {
-    return defiIsDone(defiId) ? Colors.green : Colors.yellow.shade700;
+    return defiIsDone(defiId) && listeDefisValides.map((e) => e.nom_equipe).toList().contains(widget.equipe.nom) ? Colors.green : Colors.yellow.shade700;
   }
 
   Widget getDesciptionScreen() {
@@ -128,7 +130,7 @@ class _DescriptionDefiState extends State<DescriptionDefi> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => DescriptionDefi(defi: widget.defi, isAdmin: widget.isAdmin, uidUtilisateur: widget.uidUtilisateur,)
+                        builder: (context) => DescriptionDefi(defi: widget.defi, isAdmin: widget.isAdmin, uidUtilisateur: widget.uidUtilisateur, equipe: widget.equipe)
                       )
                     );
                   });

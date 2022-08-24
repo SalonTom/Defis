@@ -337,7 +337,7 @@ class _ListeDefisState extends State<ListeDefis> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DescriptionDefi(defi: defi, isAdmin: user.isAdmin, uidUtilisateur: user.uid,)
+                  builder: (context) => DescriptionDefi(defi: defi, isAdmin: user.isAdmin, uidUtilisateur: user.uid, equipe: equipe,)
                 )
               )
             },
@@ -395,7 +395,7 @@ class _ListeDefisState extends State<ListeDefis> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DescriptionDefi(defi: defi, isAdmin: user.isAdmin, uidUtilisateur: user.uid,)
+                  builder: (context) => DescriptionDefi(defi: defi, isAdmin: user.isAdmin, uidUtilisateur: user.uid, equipe: equipe)
                 )
               )
             },
