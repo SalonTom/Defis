@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:defis_inte/add_defi.dart';
 import 'package:defis_inte/description_defi.dart';
 import 'package:defis_inte/login.dart';
 import 'package:defis_inte/model/equipe.dart';
@@ -265,26 +266,46 @@ class _ListeDefisState extends State<ListeDefis> {
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children : [
-            IconButton(
-              onPressed: null, 
-              icon: Icon(Icons.view_list_rounded, color: iconColor)
-            ),
-            IconButton(
-              onPressed: (){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LeaderBoard(uidUtilisateur: widget.uidUtilisateur,),
-                  )
-                );
-              }, 
-              icon: Icon(Icons.leaderboard, color: iconColor,),
-            ),
-          ]
+          children : bottomNavigationBarChildrenCommon() + (user.isAdmin ? bottomNavigationBarChildrenAdmin() : [])
         )
       ),
     );
+  }
+
+  List<IconButton> bottomNavigationBarChildrenCommon() {
+    return [
+      IconButton(
+        onPressed: null, 
+        icon: Icon(Icons.view_list_rounded, color: iconColor)
+      ),
+      IconButton(
+        onPressed: (){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LeaderBoard(uidUtilisateur: widget.uidUtilisateur,),
+            )
+          );
+        }, 
+        icon: Icon(Icons.leaderboard, color: iconColor,),
+      ),
+    ];
+  }
+
+  List<IconButton> bottomNavigationBarChildrenAdmin() {
+    return [
+      IconButton(
+        onPressed: (){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddDefi(uidUtilisateur: widget.uidUtilisateur,),
+            )
+          );
+        }, 
+        icon: Icon(Icons.add_box_outlined, color: iconColor,),
+      ),
+    ];
   }
 
 
